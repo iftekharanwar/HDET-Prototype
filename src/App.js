@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { ChakraProvider, Box, Button, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import { ChakraProvider, Box, Button, Input, FormControl, FormLabel, Table, Thead, Tbody, Tr, Th, Td, Alert, AlertIcon } from '@chakra-ui/react';
 import axios from 'axios';
 
 function App() {
   const [file, setFile] = useState(null);
   const [data, setData] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
+    setErrorMessage('');
+    setSuccessMessage('');
   };
 
   const handleImport = async () => {
     if (file) {
+      const fileType = file.name.split('.').pop().toLowerCase();
+      if (fileType !== 'xlsx' && fileType !== 'xml') {
+        setErrorMessage('Unsupported file type. Please upload an Excel (.xlsx) or XML (.xml) file.');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
 
@@ -22,10 +32,12 @@ function App() {
           },
         });
         console.log(response.data);
+        setSuccessMessage('Data imported successfully!');
         // Fetch the updated data from the backend
         fetchData();
       } catch (error) {
         console.error('Error importing data:', error);
+        setErrorMessage('Error importing data. Please try again.');
       }
     }
   };
@@ -50,10 +62,22 @@ function App() {
     <ChakraProvider>
       <Box p={4}>
         <FormControl>
-          <FormLabel>Import Hardware Data</FormLabel>
+          <FormLabel>Import Hardware Data (Supported file types: .xlsx, .xml)</FormLabel>
           <Input type="file" onChange={handleFileChange} />
           <Button mt={2} onClick={handleImport}>Import</Button>
         </FormControl>
+        {errorMessage && (
+          <Alert status="error" mt={4}>
+            <AlertIcon />
+            {errorMessage}
+          </Alert>
+        )}
+        {successMessage && (
+          <Alert status="success" mt={4}>
+            <AlertIcon />
+            {successMessage}
+          </Alert>
+        )}
         <Table mt={4}>
           <Thead>
             <Tr>

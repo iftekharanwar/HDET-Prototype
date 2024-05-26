@@ -8,6 +8,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# Set the maximum request size limit to 16 MB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 # Initialize the SQLite database
 def init_db():
     conn = sqlite3.connect('hdet.db')
